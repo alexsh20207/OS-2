@@ -5,7 +5,7 @@
 #define PTHREAD_CREATE_ERR -1
 #define SUCCESS 0
 
-void *printMsg(void *p) {
+void *printTextChild(void *p) {
     for (int i = 0; i < 10; ++i) {
         printf("Child - %d\n", i);
     }
@@ -15,7 +15,7 @@ void *printMsg(void *p) {
 int main() {
     pthread_t thread;
     int status;
-    status = pthread_create(&thread, NULL, printMsg, NULL);
+    status = pthread_create(&thread, NULL, printTextChild, NULL);
     if (status != SUCCESS) {
         fprintf(stderr,"pthread_create error:%d\n", status);
         return PTHREAD_CREATE_ERR;
