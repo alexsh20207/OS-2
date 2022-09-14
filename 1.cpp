@@ -5,9 +5,15 @@
 #define PTHREAD_CREATE_ERR -1
 #define SUCCESS 0
 
-void *printTextChild(void *p) {
-    for (int i = 0; i < 10; ++i) {
-        printf("Child - %d\n", i);
+typedef struct argForThread {
+    const char* text;
+    int count;
+} argForThread;
+
+void* printText(void* p) {
+    argForThread* val = (argForThread*)p;
+    for (int i = 0; i < val->count; ++i) {
+        printf("%s %d\n", val->text, i);
     }
     return SUCCESS;
 }
@@ -15,13 +21,15 @@ void *printTextChild(void *p) {
 int main() {
     pthread_t thread;
     int status;
-    status = pthread_create(&thread, NULL, printTextChild, NULL);
+    
+    argForThread mainArg = {"Main", 10};
+    argForThread newArg = {"Child", 10};
+    
+    status = pthread_create(&thread, NULL, printText, (void*)&newArg);
     if (status != SUCCESS) {
         fprintf(stderr,"pthread_create error:%d\n", status);
         return PTHREAD_CREATE_ERR;
     }
-    for (int i = 0; i < 10; ++i) {
-        printf("Main - %d\n", i);
-    }
+    printText(&mainArg);
     pthread_exit(NULL);
 }
