@@ -9,7 +9,7 @@ void *printMsg(void *p) {
     for (int i = 0; i < 10; ++i) {
         printf("Child - %d\n", i);
     }
-    return NULL;
+    return SUCCESS;
 }
  
 int main() {
