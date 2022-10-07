@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <string.h>
 
-#define PTHREAD_CREATE_ERR -1
-#define PTHREAD_JOIN_ERR -2
+#define ERROR_CODE -1
 #define SUCCESS 0
 
 typedef struct argForThread {
@@ -18,7 +18,7 @@ void* printText(void* p) {
     }
     return SUCCESS;
 }
- 
+
 int main() {
     pthread_t thread;
     int status;
@@ -28,13 +28,13 @@ int main() {
     
     status = pthread_create(&thread, NULL, printText, (void*)&newArg);
     if (status != SUCCESS) {
-        fprintf(stderr,"pthread_create error:%d\n", status);
-        return PTHREAD_CREATE_ERR;
+        fprintf(stderr,"pthread_create error:%s\n", strerror(status));
+        exit(ERROR_CODE);
     }
     status = pthread_join(thread, NULL);
     if (status != SUCCESS) {
-        fprintf(stderr, "pthread_join error:%d\n", status);
-        return PTHREAD_JOIN_ERR;
+        fprintf(stderr, "pthread_join error:%s\n", strerror(status));
+        exit(ERROR_CODE);
     }
     printText(&mainArg);
     pthread_exit(NULL);
