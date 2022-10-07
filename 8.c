@@ -71,13 +71,13 @@ int join_threads(int num_of_threads, pthread_t *thread_id, args_for_thread *thre
 
 int create_threads(int num_of_threads, pthread_t *thread_id, args_for_thread *thread_args) {
     int iteration_num = NUM_OF_STEPS / num_of_threads;
-    int num_of_additional_iterations = NUM_OF_STEPS % num_of_threads;
+    int modulo_of_iterations = NUM_OF_STEPS % num_of_threads;
 
     for (int thread_num = 0; thread_num < num_of_threads; ++thread_num) {
         thread_args[thread_num].start_index = thread_num * iteration_num;
         thread_args[thread_num].num_of_iterations = iteration_num;
 
-        if (thread_num < num_of_additional_iterations) {
+        if (thread_num < modulo_of_iterations) {
             thread_args[thread_num].num_of_iterations++;
         }
 
