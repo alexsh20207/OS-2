@@ -14,9 +14,10 @@
 #define INDEX_OF_FIRST_THREAD 0
 
 #define TERINATING_SYMBOL '\0'
-#define ERR_NUM_OF_ARGS "Plase, write one argument\n"
-#define ERR_INVAL_ARG "Please, write a number.\n"
-#define ERR_RANGE "Number has to be between 1 and 256\n"
+#define ERR_NUM_OF_ARGS "You need only one argument\n"
+#define ERR_INVAL_ARG "This is not a number\n"
+#define ERR_RANGE "Number is out of range\n"
+#define INSTRUCTION_TEXT "You need to write a number of threads: a number beetwen 1 and 256\n"
 #define ERR_MALLOC "Malloc error"
 #define ERR_CREATE_THREAD_PARTIAL_SUM "Create thread for partial sum error"
 #define ERR_JOIN_WITH_PARTIAL_SUM "Join with partial sum error"
@@ -57,17 +58,10 @@ void *calc_partial_sum(void *arg) {
     pthread_exit(NULL);
 }
 
-void join_remaining_threads(pthread_t *thread_id, int start_thread_num, int end_thread_num) {
-    for (int thread_num = start_thread_num; thread_num <= end_thread_num; thread_num++) {
-        pthread_join(thread_id[thread_num], NULL);
-    }
-}
-
-int get_partial_sums(int num_of_threads, pthread_t *thread_id, args_for_thread *thread_args, double *sum) {
+int join_threads(int num_of_threads, pthread_t *thread_id, args_for_thread *thread_args, double *sum) {
     for (int thread_num = 0; thread_num < num_of_threads; ++thread_num) {
         int status = pthread_join(thread_id[thread_num], NULL);
         if (status != SUCCESS) {
-            join_remaining_threads(thread_id, thread_num + 1, num_of_threads - 1);
             return status;
         }
         *sum += thread_args[thread_num].res;
@@ -89,14 +83,13 @@ int create_threads(int num_of_threads, pthread_t *thread_id, args_for_thread *th
 
         int status = pthread_create(&thread_id[thread_num], NULL, calc_partial_sum, (void*)&thread_args[thread_num]);
         if (status != SUCCESS) {
-            join_remaining_threads(thread_id, INDEX_OF_FIRST_THREAD, thread_num - 1);
             return status;
         }
     }
     return SUCCESS;
 }
 
-void free_memory(pthread_t *thread_id, args_for_thread *thread_args) {
+void free_resources(pthread_t *thread_id, args_for_thread *thread_args) {
     free(thread_args);
     free(thread_id);
 }
@@ -106,27 +99,27 @@ int calc_pi(int num_of_threads, double *res) {
     args_for_thread *thread_args = (args_for_thread *)malloc(num_of_threads * sizeof(args_for_thread));
 
     if (thread_id == NULL || thread_args == NULL) {
-        free_memory(thread_id, thread_args);
+        free_resources(thread_id, thread_args);
         perror(ERR_MALLOC);
         return ERROR_CODE;
     }
 
     int status = create_threads(num_of_threads, thread_id, thread_args);
     if (status != SUCCESS) {
-        free_memory(thread_id, thread_args);
+        free_resources(thread_id, thread_args);
         fprintf(stderr, "%s\n", strerror(status));
         return ERROR_CODE;
     }
 
     *res = 0;
-    status = get_partial_sums(num_of_threads, thread_id, thread_args, res);
+    status = join_threads(num_of_threads, thread_id, thread_args, res);
     if (status != SUCCESS) {
-        free_memory(thread_id, thread_args);
+        free_resources(thread_id, thread_args);
         fprintf(stderr, "%s\n", strerror(status));
         return ERROR_CODE;
     }
 
-    free_memory(thread_id, thread_args);
+    free_resources(thread_id, thread_args);
     *res = *res * 4.0;
     return SUCCESS;
 }
@@ -134,10 +127,11 @@ int calc_pi(int num_of_threads, double *res) {
 int main(int argc, char **argv) {
     int status = check_input(argc, argv);
     if (status == ERROR_CODE) {
+    	printf("%s", INSTRUCTION_TEXT);
         exit(EXIT_FAILURE);
     }
 
-    int num_of_threads = (int)strtol(argv[INDEX_FOR_NUM_THREADS], NULL, RADIX);
+    long num_of_threads = (long)strtol(argv[INDEX_FOR_NUM_THREADS], NULL, RADIX);
     double res = 0;
 
     status = calc_pi(num_of_threads, &res);
