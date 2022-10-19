@@ -16,7 +16,7 @@ typedef struct argForThread {
 
 void *print_str(void *p) {
 	argForThread* args = (argForThread*)p;
-	for (int i = 1; i <= args->lines_num; ++i) {
+	for (int i = 0; i < args->lines_num; ++i) {
 		printf("Thread[%d] - %s - line %d\n", args->thread_num, args->text, i);
 	}
 	return SUCCESS_CODE;
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 		ret_val = pthread_create(&thread_id[i], NULL, print_str, (void*)&thread_args[i]);
 		if (ret_val != SUCCESS_CODE) {
 			print_error("pthread_create error", ret_val);
-			return FAILURE_CODE;
+			exit(FAILURE_CODE);
 		}
 	}
 
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 		ret_val = pthread_join(thread_id[i], NULL);
 		if (ret_val != SUCCESS_CODE) {
 			print_error("pthread_join error", ret_val);
-			return FAILURE_CODE;
+			exit(FAILURE_CODE);
 		}
 	}
 
