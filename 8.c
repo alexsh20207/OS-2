@@ -47,7 +47,7 @@ int check_input(int argc, char **argv) {
         return FAILURE_CODE;
     }
     char *end;
-    long num_of_threads = strtol(argv[ARG_INDEX_FOR_NUM_THREADS], &end, RADIX);
+    long int num_of_threads = strtol(argv[ARG_INDEX_FOR_NUM_THREADS], &end, RADIX);
     if (*end != TERINATING_SYMBOL) {
         fprintf(stderr, ERR_INVAL_ARG);
         return FAILURE_CODE;
@@ -100,7 +100,7 @@ int join_threads(int num_of_threads, pthread_t *thread_id, argsForThread *thread
 }
 
 double get_sum(int num_of_threads, argsForThread *thread_args) {
-    double sum= 0;
+    double sum = 0;
     for (int thread_num = INDEX_OF_FIRST_THREAD; thread_num < num_of_threads; thread_num++) {
         sum += thread_args[thread_num].res;
     }
@@ -146,7 +146,7 @@ int calc_pi(int num_of_threads, double *res) {
 
     *res = get_sum(num_of_threads, thread_args);
     *res = *res * 4.0;
-    
+
     free_resources(thread_id, thread_args);
     return SUCCESS_CODE;
 }
@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    long num_of_threads = (long)strtol(argv[ARG_INDEX_FOR_NUM_THREADS], NULL, RADIX);
+    long int num_of_threads = strtol(argv[ARG_INDEX_FOR_NUM_THREADS], NULL, RADIX);
     double res = 0;
 
     ret_val = calc_pi(num_of_threads, &res);
