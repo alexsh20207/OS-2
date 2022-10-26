@@ -13,7 +13,6 @@
 #define NUM_OF_ITERATIONS 5120000
 #define INDEX_OF_FIRST_THREAD 0
 #define INDEX_OF_FIRST_ITERATION 0
-
 #define TERINATING_SYMBOL '\0'
 #define ERR_NUM_OF_ARGS "Wrong number of arguments\n"
 #define ERR_INVAL_ARG "This is not a number\n"
