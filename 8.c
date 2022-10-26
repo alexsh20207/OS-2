@@ -97,7 +97,7 @@ int join_threads(int num_of_threads, pthread_t thread_id[], argsForThread thread
     return SUCCESS_CODE;
 }
 
-double get_sum(int num_of_threads, argsForThread *thread_args) {
+double get_sum(int num_of_threads, argsForThread thread_args[]) {
     double sum = 0;
     for (int thread_num = INDEX_OF_FIRST_THREAD; thread_num < num_of_threads; thread_num++) {
         sum += thread_args[thread_num].res;
