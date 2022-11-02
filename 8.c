@@ -3,25 +3,21 @@
 #include <pthread.h>
 #include <string.h>
 
-#define NUM_OF_ARGS 3
+#define NUM_OF_ARGS 2
 #define ARG_INDEX_FOR_NUM_THREADS 1
-#define ARG_INDEX_FOR_NUM_ITERATIONS 2
 #define RADIX 10
 #define MIN_NUM_THREAD 1
 #define MAX_NUM_THREAD 1024
-#define MIN_NUM_ITERATION 1
-#define MAX_NUM_ITERATION 10000000
 #define SUCCESS_CODE 0
 #define FAILURE_CODE -1
+#define NUM_OF_ITERATIONS 5120000
 #define INDEX_OF_FIRST_THREAD 0
 #define INDEX_OF_FIRST_ITERATION 0
 #define TERINATING_SYMBOL '\0'
-
 #define ERR_NUM_OF_ARGS "Wrong number of arguments\n"
-#define ERR_INVAL_ARG_THREAD "Thread argument is not a number\n"
-#define ERR_INVAL_ARG_ITERATION "Iteration argument is not a number\n"
-#define ERR_RANGE_THREAD "Thread num is out of range (must be between 1 and 1024)\n"
-#define ERR_RANGE_ITERATION "Iteration num is out of range (must be between 1 and 10000000)\n"
+#define ERR_INVAL_ARG "This is not a number\n"
+#define ERR_RANGE "Number is out of range\n"
+#define INSTRUCTION_TEXT "You need to write a number of threads: a number beetwen 1 and 1024\n"
 #define ERR_CREATE_THREAD_PARTIAL_SUM "Create thread for partial sum error"
 #define ERR_JOIN_WITH_PARTIAL_SUM "Join with partial sum error"
 
@@ -30,6 +26,7 @@ typedef struct argsForThread {
     int num_of_iterations;
     double res;
 } argsForThread;
+
 
 void *calc_partial_sum(void *arg) {
     argsForThread *args = (argsForThread*)arg;
@@ -40,45 +37,27 @@ void *calc_partial_sum(void *arg) {
     return SUCCESS_CODE;
 }
 
-int check_range(long num, long min, long max) {
-    if (num < min || num > max) {
-        return FAILURE_CODE;
-    }
-    return SUCCESS_CODE;
-}
-
 int check_input(int argc, char **argv) {
     if (argc != NUM_OF_ARGS) {
         fprintf(stderr, ERR_NUM_OF_ARGS);
         return FAILURE_CODE;
     }
-
     char *end;
     long int num_of_threads = strtol(argv[ARG_INDEX_FOR_NUM_THREADS], &end, RADIX);
     if (*end != TERINATING_SYMBOL) {
-        fprintf(stderr, ERR_INVAL_ARG_THREAD);
+        fprintf(stderr, ERR_INVAL_ARG);
         return FAILURE_CODE;
     }
-    long int num_of_iterations = strtol(argv[ARG_INDEX_FOR_NUM_ITERATIONS], &end, RADIX);
-    if (*end != TERINATING_SYMBOL) {
-        fprintf(stderr, ERR_INVAL_ARG_ITERATION);
-        return FAILURE_CODE;
-    }
-
-    if (check_range(num_of_threads, MIN_NUM_THREAD, MAX_NUM_THREAD) == FAILURE_CODE) {
-        fprintf(stderr, ERR_RANGE_THREAD);
-        return FAILURE_CODE;
-    }
-    if (check_range(num_of_iterations, MIN_NUM_ITERATION, MAX_NUM_ITERATION) == FAILURE_CODE) {
-        fprintf(stderr, ERR_RANGE_ITERATION);
+    if (num_of_threads < MIN_NUM_THREAD || num_of_threads > MAX_NUM_THREAD) {
+        fprintf(stderr, ERR_RANGE);
         return FAILURE_CODE;
     }
     return SUCCESS_CODE;
 }
 
-void init_args(int num_of_threads, int num_of_iterations, argsForThread thread_args[]) {
-    int iteration_num = num_of_iterations / num_of_threads;
-    int modulo_of_iterations = num_of_iterations % num_of_threads;
+void init_args(int num_of_threads, argsForThread thread_args[]) {
+    int iteration_num = NUM_OF_ITERATIONS / num_of_threads;
+    int modulo_of_iterations = NUM_OF_ITERATIONS % num_of_threads;
 
     for (int thread_num = INDEX_OF_FIRST_THREAD; thread_num < num_of_threads; thread_num++) {
         thread_args[thread_num].num_of_iterations = iteration_num;
@@ -132,11 +111,11 @@ void print_error(char *msg, int ret_code) {
     fprintf(stderr, "%s: %s\n", msg, buf);
 }
 
-int calc_pi(int num_of_threads, int num_of_iterations, double *res) {
+int calc_pi(int num_of_threads, double *res) {
     pthread_t thread_id[num_of_threads];
     argsForThread thread_args[num_of_threads];
 
-    init_args(num_of_threads, num_of_iterations, thread_args);
+    init_args(num_of_threads, thread_args);
 
     int ret_val = create_threads(num_of_threads, thread_id, thread_args);
     if (ret_val != SUCCESS_CODE) {
@@ -159,14 +138,14 @@ int calc_pi(int num_of_threads, int num_of_iterations, double *res) {
 int main(int argc, char **argv) {
     int ret_val = check_input(argc, argv);
     if (ret_val != SUCCESS_CODE) {
+    	printf("%s", INSTRUCTION_TEXT);
         exit(EXIT_FAILURE);
     }
 
     long int num_of_threads = strtol(argv[ARG_INDEX_FOR_NUM_THREADS], NULL, RADIX);
-    long int num_of_iterations = strtol(argv[ARG_INDEX_FOR_NUM_ITERATIONS], NULL, RADIX);
     double res = 0;
 
-    ret_val = calc_pi(num_of_threads, num_of_iterations, &res);
+    ret_val = calc_pi(num_of_threads, &res);
     if (ret_val != SUCCESS_CODE) {
         exit(EXIT_FAILURE);
     }
