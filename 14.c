@@ -124,6 +124,5 @@ int main(int argc, char* argv[]) {
     if (ret_val != SUCCESS_CODE) {
         exit(FAILURE_CODE);
     }
-    return SUCCESS_CODE;
+    pthread_exit(NULL);
 }
-
