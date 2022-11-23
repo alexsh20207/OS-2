@@ -1,7 +1,6 @@
 #include <pthread.h>
 #include <string.h>
 #include <semaphore.h>
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,6 +12,7 @@
 #define INDEX_OF_SEM_POST_FOR_CHILD 1
 #define INDEX_OF_SEM_WAIT_FOR_MAIN 1
 #define INDEX_OF_SEM_POST_FOR_MAIN 0
+#define PSHARED_VALUE 0
 
 sem_t sems[COUNT_OF_SEMAPHORES];
 
@@ -31,6 +31,7 @@ void print_error(char* additional_msg, int errnum) {
 
 int destroy_sem(int number) {
     for (int i = 0; i < number; i++) {
+        int ret_val = sem_post(&sems[i]);
         ret_val = sem_destroy(&sems[i]);
         if (ret_val != SUCCESS_CODE) {
             perror("Destroying semaphore error");
@@ -42,7 +43,7 @@ int destroy_sem(int number) {
 
 int init_sem() {
     for (int i = 0; i < COUNT_OF_SEMAPHORES; ++i) {
-        int ret_val = sem_init(&sems[i], 0, i);
+        int ret_val = sem_init(&sems[i], PSHARED_VALUE, i);
         if (ret_val != SUCCESS_CODE) {
             destroy_sem(i);
             perror("Initialization semaphore error");
@@ -78,7 +79,9 @@ void* print_strings(void* p) {
         if (ret_val != SUCCESS_CODE) {
             return (void*)FAILURE_CODE;
         }
+
         printf("%d %s\n", i, args->text);
+
         ret_val = post_sem(args->index_of_post_sem);
         if (ret_val != SUCCESS_CODE) {
             return (void*)FAILURE_CODE;
@@ -119,10 +122,10 @@ int main(int argc, char* argv[]) {
     if (child_ret_val != SUCCESS_CODE) {
         exit(FAILURE_CODE);
     }
-
     ret_val = destroy_sem(COUNT_OF_SEMAPHORES);
     if (ret_val != SUCCESS_CODE) {
         exit(FAILURE_CODE);
     }
-    pthread_exit(NULL);
+    return SUCCESS_CODE;
 }
+
