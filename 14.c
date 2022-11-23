@@ -13,6 +13,8 @@
 #define INDEX_OF_SEM_WAIT_FOR_MAIN 1
 #define INDEX_OF_SEM_POST_FOR_MAIN 0
 #define PSHARED_VALUE 0
+#define TEXT_FOR_MAIN "Main"
+#define TEXT_FOR_CHILD "Child"
 
 sem_t sems[COUNT_OF_SEMAPHORES];
 
@@ -92,8 +94,8 @@ void* print_strings(void* p) {
 
 int main(int argc, char* argv[]) {
     pthread_t thread;
-    args_for_thread child_args = {"Child", COUNT_OF_STRINGS, INDEX_OF_SEM_WAIT_FOR_CHILD, INDEX_OF_SEM_POST_FOR_CHILD};
-    args_for_thread main_args = {"Main", COUNT_OF_STRINGS, INDEX_OF_SEM_WAIT_FOR_MAIN, INDEX_OF_SEM_POST_FOR_MAIN};
+    args_for_thread child_args = {TEXT_FOR_CHILD, COUNT_OF_STRINGS, INDEX_OF_SEM_WAIT_FOR_CHILD, INDEX_OF_SEM_POST_FOR_CHILD};
+    args_for_thread main_args = {TEXT_FOR_MAIN, COUNT_OF_STRINGS, INDEX_OF_SEM_WAIT_FOR_MAIN, INDEX_OF_SEM_POST_FOR_MAIN};
     int ret_val;
     ret_val = init_sem();
     if (ret_val != SUCCESS_CODE) {
