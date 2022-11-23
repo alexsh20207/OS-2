@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <semaphore.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -30,11 +31,6 @@ void print_error(char* additional_msg, int errnum) {
 
 int destroy_sem(int number) {
     for (int i = 0; i < number; i++) {
-        int ret_val = sem_post(&sems[i]);
-        if (ret_val != SUCCESS_CODE) {
-            perror("Semaphore post error");
-            return ret_val;
-        }
         ret_val = sem_destroy(&sems[i]);
         if (ret_val != SUCCESS_CODE) {
             perror("Destroying semaphore error");
@@ -49,7 +45,7 @@ int init_sem() {
         int ret_val = sem_init(&sems[i], 0, i);
         if (ret_val != SUCCESS_CODE) {
             destroy_sem(i);
-            perror("Destroying semaphore error");
+            perror("Initialization semaphore error");
             return ret_val;
         }
     }
