@@ -8,21 +8,18 @@
 #define SUCCESS_CODE 0
 #define COUNT_OF_SEMAPHORES 2
 #define COUNT_OF_STRINGS 10
-#define INDEX_OF_SEM_WAIT_FOR_CHILD 0 
-#define INDEX_OF_SEM_POST_FOR_CHILD 1
-#define INDEX_OF_SEM_WAIT_FOR_MAIN 1
-#define INDEX_OF_SEM_POST_FOR_MAIN 0
-#define PSHARED_VALUE 0
-#define TEXT_FOR_MAIN "Main"
+#define INDEX_OF_SEM_FOR_CHILD 0 
+#define INDEX_OF_SEM_FOR_MAIN 1
 #define TEXT_FOR_CHILD "Child"
+#define TEXT_FOR_MAIN "Main"
+#define PSHARED_VALUE 0
 
 sem_t sems[COUNT_OF_SEMAPHORES];
 
 typedef struct args_for_thread {
     const char* text;
     int count_of_strings;
-    int index_of_wait_sem;
-    int index_of_post_sem;
+    int index_of_sem;
 } args_for_thread;
 
 void print_error(char* additional_msg, int errnum) {
@@ -33,8 +30,7 @@ void print_error(char* additional_msg, int errnum) {
 
 int destroy_sem(int number) {
     for (int i = 0; i < number; i++) {
-        int ret_val = sem_post(&sems[i]);
-        ret_val = sem_destroy(&sems[i]);
+        int ret_val = sem_destroy(&sems[i]);
         if (ret_val != SUCCESS_CODE) {
             perror("Destroying semaphore error");
             return ret_val;
@@ -48,7 +44,7 @@ int init_sem() {
         int ret_val = sem_init(&sems[i], PSHARED_VALUE, i);
         if (ret_val != SUCCESS_CODE) {
             destroy_sem(i);
-            perror("Initialization semaphore error");
+            perror("Destroying semaphore error");
             return ret_val;
         }
     }
@@ -77,14 +73,16 @@ void* print_strings(void* p) {
     args_for_thread* args = (args_for_thread*)p;
     int ret_val;
     for (int i = 0; i < args->count_of_strings; i++) { 
-        ret_val = wait_sem(args->index_of_wait_sem);
+        int index_of_wait_sem = args->index_of_sem;
+        int index_of_post_sem = (args->index_of_sem + 1) % COUNT_OF_SEMAPHORES;
+        ret_val = wait_sem(index_of_wait_sem);
         if (ret_val != SUCCESS_CODE) {
             return (void*)FAILURE_CODE;
         }
-
+        
         printf("%d %s\n", i, args->text);
-
-        ret_val = post_sem(args->index_of_post_sem);
+        
+        ret_val = post_sem(index_of_post_sem);
         if (ret_val != SUCCESS_CODE) {
             return (void*)FAILURE_CODE;
         }
@@ -94,8 +92,8 @@ void* print_strings(void* p) {
 
 int main(int argc, char* argv[]) {
     pthread_t thread;
-    args_for_thread child_args = {TEXT_FOR_CHILD, COUNT_OF_STRINGS, INDEX_OF_SEM_WAIT_FOR_CHILD, INDEX_OF_SEM_POST_FOR_CHILD};
-    args_for_thread main_args = {TEXT_FOR_MAIN, COUNT_OF_STRINGS, INDEX_OF_SEM_WAIT_FOR_MAIN, INDEX_OF_SEM_POST_FOR_MAIN};
+    args_for_thread child_args = {TEXT_FOR_CHILD, COUNT_OF_STRINGS, INDEX_OF_SEM_FOR_CHILD};
+    args_for_thread main_args = {TEXT_FOR_MAIN, COUNT_OF_STRINGS, INDEX_OF_SEM_FOR_MAIN};
     int ret_val;
     ret_val = init_sem();
     if (ret_val != SUCCESS_CODE) {
@@ -124,10 +122,10 @@ int main(int argc, char* argv[]) {
     if (child_ret_val != SUCCESS_CODE) {
         exit(FAILURE_CODE);
     }
+    
     ret_val = destroy_sem(COUNT_OF_SEMAPHORES);
     if (ret_val != SUCCESS_CODE) {
         exit(FAILURE_CODE);
     }
-    return SUCCESS_CODE;
+    pthread_exit(NULL);
 }
-
