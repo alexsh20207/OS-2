@@ -3,6 +3,7 @@
 #include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #define FAILURE_CODE 1
 #define SUCCESS_CODE 0
@@ -23,7 +24,7 @@ typedef struct args_for_thread {
 } args_for_thread;
 
 void print_error(char* additional_msg, int errnum) {
-    char buf[256];
+    char buf[256];a
     strerror_r(errnum, buf, sizeof buf);
     fprintf(stderr, "%s: %s\n", additional_msg, buf);
 }
